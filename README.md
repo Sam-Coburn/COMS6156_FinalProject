@@ -1,5 +1,5 @@
 # COMS 6156 - Final Project
-Examining the efficacy of [code embeddings] [[PDF]](https://urialon.cswp.cs.technion.ac.il/wp-content/uploads/sites/83/2018/12/code2vec-popl19.pdf) in the task of code similarity analysis.
+Examining the efficacy of [code embeddings](https://urialon.cswp.cs.technion.ac.il/wp-content/uploads/sites/83/2018/12/code2vec-popl19.pdf) in the task of code similarity analysis.
 
 This project is an extension of the experimental process described in:
 

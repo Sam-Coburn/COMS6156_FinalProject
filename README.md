@@ -10,3 +10,9 @@ using the code representations described in:
 **code2vec: Learning Distributed Representations of Code** - [[PDF]](https://urialon.cswp.cs.technion.ac.il/wp-content/uploads/sites/83/2018/12/code2vec-popl19.pdf)
 
 Samuel Coburn (sc4917@columbia.edu), Jessica Kim (sk4711@columbia.edu)
+
+# Additional Related Work
+    * **word2vec**
+
+# Documentation
+**Project Proposal** 

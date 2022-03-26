@@ -12,7 +12,8 @@ using the code representations described in:
 Samuel Coburn (sc4917@columbia.edu), Jessica Kim (sk4711@columbia.edu)
 
 # Additional Related Work
-    * **word2vec**
+* **word2vec** - [[PDF]](https://github.com/Sam-Coburn/COMS6156_FinalProject/blob/main/Related%20Work/word2vec.pdf)
+* **Siri, Write the Next Method** - [[PDF]](https://github.com/Sam-Coburn/COMS6156_FinalProject/blob/main/Related%20Work/Siri_Write_the_Next_Method.pdf)
 
 # Documentation
-**Project Proposal** 
+**Project Proposal** -  [[PDF]](https://github.com/Sam-Coburn/COMS6156_FinalProject/blob/main/Proposal/SamuelCoburn_COMS6156_FinalProjectProposal.pdf)

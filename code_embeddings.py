@@ -4,8 +4,8 @@ from math import sqrt
 
 # Reads and Organizes the Code Embeddings Located in the .txt File
 # Outputs a dictionary with the program name as the key and its corresponding code embedding as the value
-def read_code_embeddings():
-    file = open("code_embeddings_A1.txt", "r")
+def read_code_embeddings(file_name):
+    file = open(file_name, "r")
     lines = file.readlines()
 
     embedding_dictionary = {}
@@ -104,14 +104,18 @@ def threshold_grid_search(embeddings):
     auc = np.trapz(y_arr, x = x_arr)
     print("AUC: ", auc) # Fix by sorting x (and correspondindly Y)
 
+    '''
     plt.plot(x, y)
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
     plt.title("Receiver Operating Characterisitc (ROC) Curve")
     plt.show()
+    '''
 
-def code_similarity_analysis(embeddings):
-    threshold = 0.66 # max threshold value determined by the grid search
+    return (f1_scores.index(max(f1_scores)) + 1) / 100
+
+def code_similarity_analysis(embeddings, test_name, threshold):
+    print(threshold)
 
     true_positive_count = 0
     true_negative_count = 0
@@ -132,16 +136,33 @@ def code_similarity_analysis(embeddings):
                 else:
                     true_negative_count += 1
     
+    print("EMBEDDINGS " + test_name + " ANALYTICS")
+    print("true positives: ", true_positive_count)
+    print("true negatives: ", true_negative_count)
+    print("false positives: ", false_positive_count)
+    print("false negatives: ", false_negative_count)
+
     accuracy = (true_positive_count + true_negative_count) / ((len(k1) * len(k2)) * 100)
     precision = true_positive_count / (true_positive_count + false_positive_count)
     recall = true_positive_count / (true_positive_count + false_negative_count)
     f1 = (2 * precision * recall) / (precision + recall)
     
-    print("ACCURACY: ", accuracy)
-    print("PRECISION: ", precision)
-    print("RECALL: ", recall)
+    print("accuracy: ", accuracy)
+    print("precision: ", precision)
+    print("recall: ", recall)
     print("F1: ", f1)
-        
-embeddings = read_code_embeddings()
-# threshold_grid_search(embeddings)
-code_similarity_analysis(embeddings)
+    print("\n")
+
+# Tests for Code Embeddings
+# * separated into two experiments: embeddings trained using one model (model A) and embeddings using another, larger model (model B)
+# * for each model, there are three sets of embeddings: the normal dataset, and two datasets for the original files passed through decompilers
+
+# EMBEDDINGS A1
+embeddings_A1 = read_code_embeddings("Code Embeddings/code_embeddings_A1.txt")
+A1_threshold = threshold_grid_search(embeddings_A1) # A1 Threshold is 0.66 (threshold with max F1 value)
+code_similarity_analysis(embeddings_A1, "A1", A1_threshold)
+
+# EMBEDDINGS A2
+embeddings_A2 = read_code_embeddings("Code Embeddings/code_embeddings_A2.txt")
+A2_threshold = threshold_grid_search(embeddings_A2) # A2 Threshold is  (threshold with max F1 value)
+code_similarity_analysis(embeddings_A2, "A2", A2_threshold)

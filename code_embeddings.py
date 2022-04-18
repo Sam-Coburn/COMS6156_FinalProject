@@ -98,7 +98,7 @@ def threshold_grid_search(embeddings):
     # Cycles through threshold values in order to find highest F1 score produced by this similarity comparison method
     for i in range(1, 101):
         threshold = i / 100
-        thresholds.append(threshold)
+        thresholds.append(i)
 
         # TP, TN, FP, and FN counts
         # TPs are defined as codes with the same tag within the embedding dictionary with a similarity score above the current threshold
@@ -133,9 +133,10 @@ def threshold_grid_search(embeddings):
         y.append(true_positive_count / (true_positive_count + false_negative_count))
 
     # Retrieve max F1 found from the grid search
+    max_F1 = max(f1_scores)
     max_threshold = (f1_scores.index(max(f1_scores)) + 1)
 
-    print("MAX F1: ", max(f1_scores))
+    print("MAX F1: ", max_F1)
     print("MAX F1 T: ", max_threshold)
 
     # Calculate the AUC of the ROC Curve
@@ -153,14 +154,26 @@ def threshold_grid_search(embeddings):
     auc = np.trapz(y_arr, x = x_arr)
     print("AUC: ", auc) # Fix by sorting x (and correspondindly Y)
 
+    '''
     # Plot F1 Curve
+    horzional_line_x = []
+    horzional_line_y = []
+    val = 0.0
+    while val < max_F1:
+        horzional_line_x.append(max_threshold)
+        horzional_line_y.append(val)
+        val = val + 0.0001
+
+    plt.plot(horzional_line_x, horzional_line_y, linestyle = "dashed", color = "r")
     plt.plot(thresholds, f1_scores)
+    plt.text(max_threshold, max_F1 / 8, str(max_threshold), color = "r", horizontalalignment = "center", size = "smaller", bbox=dict(facecolor='white', edgecolor="white"))
+    plt.text(max_threshold, max_F1 + 0.005, str(max_F1), color = "r", horizontalalignment = "center", size = "smaller")
+    # plt.axvline(x = max_threshold / 100, ymax = max_F1, linestyle = "dashed", color = "r")
     plt.xlabel("Threshold Value")
     plt.ylabel("F1 Score")
     plt.title("Code Similarity Performance for Various Threshold Values")
     plt.show()
 
-    '''
     # Plot ROC Curve
     plt.plot(x, y)
     plt.xlabel("False Positive Rate")
@@ -241,23 +254,73 @@ def F1_plots(threshold_1, f1_1, threshold_2, f1_2, threshold_3, f1_3):
     plt.title("Code Similarity Performance for Various Threshold Values")
     plt.show()
 
+def precision_at_n(embeddings, threshold):
+    # TP = 1
+    # TN = 2
+    # FP = 3
+    # FN = 4
+    
+    results = []
+    for k1 in list(embeddings.keys()):
+        for k2 in list(embeddings.keys()):
+            val = cosine_similarity(embeddings[k1][0], embeddings[k2][0])
+            if val >= threshold:
+                if embeddings[k1][1] == embeddings[k2][1]:
+                    results.append((val, 1))
+                else:
+                    results.append((val, 3))
+            else:
+                if embeddings[k1][1] == embeddings[k2][1]:
+                    results.append((val, 4))
+                else:
+                    results.append((val, 2))
+    
+    results.sort(key = lambda x: x[0])
+    results.reverse()
+
+    x = []
+    y = []
+    for n in range(1, 1501):
+        x.append(n)
+
+        # Calculate precision at current value of n
+        # * precision = true_positive_count / (true_positive_count + false_positive_count)
+        true_positive_count = 0
+        false_positive_count = 0
+        for i in range(0, n):
+            if results[i][1] == 1:
+                true_positive_count += 1
+            elif results[i][1] == 3:
+                false_positive_count += 1
+        
+        y.append(true_positive_count / (true_positive_count + false_positive_count))
+
+    plt.plot(x, y)
+    plt.xlabel("N")
+    plt.ylabel("Precision")
+    plt.title("Precision@N Curve for the Original Dataset")
+    plt.show()
+
+    return x, y
+
 # Tests for Code Embeddings
 # * separated into two experiments: embeddings trained using one model (model A) and embeddings using another, larger model (model B)
 # * for each model, there are three sets of embeddings: the normal dataset, and two datasets for the original files passed through decompilers
 if __name__ == "__main__":
     # EMBEDDINGS A1 - Original
-    # embeddings_A1 = read_code_embeddings("Code Embeddings/code_embeddings_A1.txt")
-    # A1_threshold, A1_thresholds, A1_F1s = threshold_grid_search(embeddings_A1) # A1 Threshold is 0.66 (threshold with max F1 value)
-    # A1_F1 = code_similarity_analysis(embeddings_A1, "A1", A1_threshold) # 0.5406698564593302
+    embeddings_A1 = read_code_embeddings("Code Embeddings/code_embeddings_A1.txt")
+    A1_threshold, A1_thresholds, A1_F1s = threshold_grid_search(embeddings_A1) # A1 Threshold is 0.66 (threshold with max F1 value)
+    A1_F1 = code_similarity_analysis(embeddings_A1, "A1", A1_threshold) # 0.5406698564593302
+    A1_n, A1_precision = precision_at_n(embeddings_A1, A1_threshold)
 
     # EMBEDDINGS A2 - Krakatau 
-    # embeddings_A2 = read_code_embeddings("Code Embeddings/code_embeddings_A2.txt")
-    # A2_threshold, A2_thresholds, A2_F1s = threshold_grid_search(embeddings_A2) # A2 Threshold is 86 (threshold with max F1 value)
-    # A2_F1 = code_similarity_analysis(embeddings_A2, "A2", A2_threshold) # 0.7937273823884199
+    embeddings_A2 = read_code_embeddings("Code Embeddings/code_embeddings_A2.txt")
+    A2_threshold, A2_thresholds, A2_F1s = threshold_grid_search(embeddings_A2) # A2 Threshold is 86 (threshold with max F1 value)
+    A2_F1 = code_similarity_analysis(embeddings_A2, "A2", A2_threshold) # 0.7937273823884199
 
     # EMBEDDINGS A3 - Procyon (CHECK THIS)
     embeddings_A3 = read_code_embeddings("Code Embeddings/code_embeddings_A3.txt")
     A3_threshold, A3_thresholds, A3_F1s = threshold_grid_search(embeddings_A3) # A3 Threshold is 0.76 (threshold with max F1 value)
     A3_F1 = code_similarity_analysis(embeddings_A3, "A3", A3_threshold) # 0.8331441543700342
 
-    # F1_plots(A1_thresholds, A1_F1s, A2_thresholds, A2_F1s, A3_thresholds, A3_F1s)
+    F1_plots(A1_thresholds, A1_F1s, A2_thresholds, A2_F1s, A3_thresholds, A3_F1s)

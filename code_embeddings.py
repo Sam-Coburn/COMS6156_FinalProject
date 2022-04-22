@@ -154,7 +154,6 @@ def threshold_grid_search(embeddings):
     auc = np.trapz(y_arr, x = x_arr)
     print("AUC: ", auc) # Fix by sorting x (and correspondindly Y)
 
-    '''
     # Plot F1 Curve
     horzional_line_x = []
     horzional_line_y = []
@@ -180,7 +179,6 @@ def threshold_grid_search(embeddings):
     plt.ylabel("True Positive Rate")
     plt.title("Receiver Operating Characterisitc (ROC) Curve")
     plt.show()
-    '''
 
     return (f1_scores.index(max(f1_scores)) + 1) / 100, thresholds, f1_scores # Return the threshold value with the max observed F1 score
 
@@ -254,6 +252,14 @@ def F1_plots(threshold_1, f1_1, threshold_2, f1_2, threshold_3, f1_3):
     plt.title("Code Similarity Performance for Various Threshold Values")
     plt.show()
 
+#--------------------------------------------------------------------------------------------------------------------------------
+#   Function:   precision_at_n	
+#	Inputs:     embeddings: embedding dictionary
+#               threshold: threshold value for dataset that provides highest F1 score
+#	Outputs:    N/A
+#	Purpose:	Creates a plot of the precision@n for the given code embeddings using the same method described in the 
+#               Similarity Analyzers paper
+#--------------------------------------------------------------------------------------------------------------------------------
 def precision_at_n(embeddings, threshold):
     # TP = 1
     # TN = 2
@@ -301,26 +307,44 @@ def precision_at_n(embeddings, threshold):
     plt.title("Precision@N Curve for the Original Dataset")
     plt.show()
 
-    return x, y
-
 # Tests for Code Embeddings
 # * separated into two experiments: embeddings trained using one model (model A) and embeddings using another, larger model (model B)
 # * for each model, there are three sets of embeddings: the normal dataset, and two datasets for the original files passed through decompilers
 if __name__ == "__main__":
+    # Dataset A - Embeddings Created Using Java-14 Model
     # EMBEDDINGS A1 - Original
     embeddings_A1 = read_code_embeddings("Code Embeddings/code_embeddings_A1.txt")
     A1_threshold, A1_thresholds, A1_F1s = threshold_grid_search(embeddings_A1) # A1 Threshold is 0.66 (threshold with max F1 value)
     A1_F1 = code_similarity_analysis(embeddings_A1, "A1", A1_threshold) # 0.5406698564593302
-    A1_n, A1_precision = precision_at_n(embeddings_A1, A1_threshold)
+    precision_at_n(embeddings_A1, A1_threshold)
 
     # EMBEDDINGS A2 - Krakatau 
     embeddings_A2 = read_code_embeddings("Code Embeddings/code_embeddings_A2.txt")
     A2_threshold, A2_thresholds, A2_F1s = threshold_grid_search(embeddings_A2) # A2 Threshold is 86 (threshold with max F1 value)
     A2_F1 = code_similarity_analysis(embeddings_A2, "A2", A2_threshold) # 0.7937273823884199
 
-    # EMBEDDINGS A3 - Procyon (CHECK THIS)
+    # EMBEDDINGS A3 - Procyon
     embeddings_A3 = read_code_embeddings("Code Embeddings/code_embeddings_A3.txt")
     A3_threshold, A3_thresholds, A3_F1s = threshold_grid_search(embeddings_A3) # A3 Threshold is 0.76 (threshold with max F1 value)
     A3_F1 = code_similarity_analysis(embeddings_A3, "A3", A3_threshold) # 0.8331441543700342
 
     F1_plots(A1_thresholds, A1_F1s, A2_thresholds, A2_F1s, A3_thresholds, A3_F1s)
+    
+    # Dataset B - Embeddings Created Using Java-Large Model
+    # EMBEDDINGS B1 - Original
+    embeddings_B1 = read_code_embeddings("Code Embeddings/code_embeddings_B1.txt")
+    B1_threshold, B1_thresholds, B1_F1s = threshold_grid_search(embeddings_B1) 
+    B1_F1 = code_similarity_analysis(embeddings_B1, "B1", B1_threshold)
+    precision_at_n(embeddings_B1, B1_threshold)
+
+    # EMBEDDINGS B2 - Krakatau 
+    embeddings_B2 = read_code_embeddings("Code Embeddings/code_embeddings_B2.txt")
+    B2_threshold, B2_thresholds, B2_F1s = threshold_grid_search(embeddings_B2) 
+    B2_F1 = code_similarity_analysis(embeddings_B2, "B2", B2_threshold)
+
+    # EMBEDDINGS B3 - Procyon
+    embeddings_B3 = read_code_embeddings("Code Embeddings/code_embeddings_B3.txt")
+    B3_threshold, B3_thresholds, B3_F1s = threshold_grid_search(embeddings_B3)
+    B3_F1 = code_similarity_analysis(embeddings_B3, "B3", B3_threshold) 
+
+    F1_plots(B1_thresholds, B1_F1s, B2_thresholds, B2_F1s, B3_thresholds, B3_F1s)

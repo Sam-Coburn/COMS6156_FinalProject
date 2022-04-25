@@ -12,8 +12,8 @@ from math import sqrt
 #--------------------------------------------------------------------------------------------------------------------------------
 def read_code_embeddings(file_name):
     # Open the code2vec embedding file in read mode
-    file = open(file_name, "r")
-    lines = file.readlines() # Retrieve all lines from the file in a list
+    embeddings_file = open(file_name, "r")
+    lines = embeddings_file.readlines() # Retrieve all lines from the file in a list
 
     # Create a dictionary of code2vec embeddings
     embedding_dictionary = {}
@@ -307,6 +307,91 @@ def precision_at_n(embeddings, threshold):
     plt.title("Precision@N Curve for the Original Dataset")
     plt.show()
 
+#--------------------------------------------------------------------------------------------------------------------------------
+#   Function:   average_r_precision
+#	Inputs:     embeddings: embedding dictionary
+#               test_name: name of the current experiment (used in printing of results)
+#               r: number of relevant results (i.e. true positives)
+#	Outputs:    N/A
+#	Purpose:	Calculates the ARP for a set of embeddings as a method of error measurement
+#--------------------------------------------------------------------------------------------------------------------------------
+def average_r_precision(embeddings, test_name, r):
+    r_precisions_sum = 0
+
+    for k1 in list(embeddings.keys()):
+
+        # Create a ranked list of the top r similar embeddings (i.e. set of relevant files) for each query 
+        top_r_results = []
+        for k2 in list(embeddings.keys()):
+            val = cosine_similarity(embeddings[k1][0], embeddings[k2][0])
+            if (len(top_r_results) < r):
+                top_r_results.append((embeddings[k1][1], val))
+            else:
+                min_val = (min(top_r_results, key=lambda x: x[1]))[1]
+                if val < min_val:
+                    top_r_results = [(tag, similarity) for (tag, similarity) in top_r_results if similarity != min_val]
+                    top_r_results.append((embeddings[k1][1], val))
+
+        top_r_results.sort(key=lambda x: x[1])
+
+        # Count the number of true positives in each ranked list
+        true_positive_count = 0
+        for k in top_r_results:
+            if k[0] == embeddings[k1][1]:
+                true_positive_count += 1
+        
+        # Calculate and keep track of the r-precision for each query
+        r_precisions_sum += (true_positive_count / r)
+    
+    # Calculate the average r-precision for the entire set of embeddings
+    arp = r_precisions_sum / len(list(embeddings.keys()))
+
+    print("EMBEDDINGS " + test_name + " ARP:", arp)
+
+#--------------------------------------------------------------------------------------------------------------------------------
+#   Function:   mean_average_precision
+#	Inputs:     embeddings: embedding dictionary
+#               test_name: name of the current experiment (used in printing of results)
+#               r: number of relevant results (i.e. true positives)
+#	Outputs:    N/A
+#	Purpose:	Calculates the MAP for a set of embeddings as a method of error measurement
+#--------------------------------------------------------------------------------------------------------------------------------
+def mean_average_precision(embeddings, test_name, r):
+    avg_precisions_sum = 0
+
+    for k1 in list(embeddings.keys()):
+
+        # Create a ranked list of the top r similar embeddings (i.e. set of relevant files) for each query 
+        top_r_results = []
+        for k2 in list(embeddings.keys()):
+            val = cosine_similarity(embeddings[k1][0], embeddings[k2][0])
+            if (len(top_r_results) < r):
+                top_r_results.append((embeddings[k1][1], val))
+            else:
+                min_val = (min(top_r_results, key=lambda x: x[1]))[1]
+                if val < min_val:
+                    top_r_results = [(tag, similarity) for (tag, similarity) in top_r_results if similarity != min_val]
+                    top_r_results.append((embeddings[k1][1], val))
+        
+        top_r_results.sort(key=lambda x: x[1])
+
+        precision_at_n_sum = 0
+        true_positive_count = 0
+        
+        # Calculate the precision@n for each query
+        for i in range(1, r + 1):
+            if top_r_results[i - 1][0] == embeddings[k1][1]:
+                true_positive_count += 1
+            precision_at_n_sum += (true_positive_count / i)
+        
+        # Calculate and keep track of the average precisions@n for each query
+        avg_precisions_sum += (precision_at_n_sum / r)
+    
+    # Calculate the average precisions@n for the entire set of embeddings
+    mean_precision = avg_precisions_sum / len(list(embeddings.keys()))
+
+    print("EMBEDDINGS " + test_name + " MAP", mean_precision)
+    
 # Tests for Code Embeddings
 # * separated into two experiments: embeddings trained using one model (model A) and embeddings using another, larger model (model B)
 # * for each model, there are three sets of embeddings: the normal dataset, and two datasets for the original files passed through decompilers
@@ -314,9 +399,12 @@ if __name__ == "__main__":
     # Dataset A - Embeddings Created Using Java-14 Model
     # EMBEDDINGS A1 - Original
     embeddings_A1 = read_code_embeddings("Code Embeddings/code_embeddings_A1.txt")
+
     A1_threshold, A1_thresholds, A1_F1s = threshold_grid_search(embeddings_A1) # A1 Threshold is 0.66 (threshold with max F1 value)
     A1_F1 = code_similarity_analysis(embeddings_A1, "A1", A1_threshold) # 0.5406698564593302
     precision_at_n(embeddings_A1, A1_threshold)
+    average_r_precision(embeddings_A1, "A1", 10)
+    mean_average_precision(embeddings_A1, "A1", 10)
 
     # EMBEDDINGS A2 - Krakatau 
     embeddings_A2 = read_code_embeddings("Code Embeddings/code_embeddings_A2.txt")
@@ -333,16 +421,19 @@ if __name__ == "__main__":
     # Dataset B - Embeddings Created Using Java-Large Model
     # EMBEDDINGS B1 - Original
     embeddings_B1 = read_code_embeddings("Code Embeddings/code_embeddings_B1.txt")
+
     B1_threshold, B1_thresholds, B1_F1s = threshold_grid_search(embeddings_B1) 
     B1_F1 = code_similarity_analysis(embeddings_B1, "B1", B1_threshold)
     precision_at_n(embeddings_B1, B1_threshold)
+    average_r_precision(embeddings_B1, "B1", 10)
+    mean_average_precision(embeddings_B1, "B1", 10)
 
     # EMBEDDINGS B2 - Krakatau 
     embeddings_B2 = read_code_embeddings("Code Embeddings/code_embeddings_B2.txt")
     B2_threshold, B2_thresholds, B2_F1s = threshold_grid_search(embeddings_B2) 
     B2_F1 = code_similarity_analysis(embeddings_B2, "B2", B2_threshold)
 
-    # EMBEDDINGS B3 - Procyon
+    # # EMBEDDINGS B3 - Procyon
     embeddings_B3 = read_code_embeddings("Code Embeddings/code_embeddings_B3.txt")
     B3_threshold, B3_thresholds, B3_F1s = threshold_grid_search(embeddings_B3)
     B3_F1 = code_similarity_analysis(embeddings_B3, "B3", B3_threshold) 

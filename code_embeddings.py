@@ -154,6 +154,7 @@ def threshold_grid_search(embeddings):
     auc = np.trapz(y_arr, x = x_arr)
     print("AUC: ", auc) # Fix by sorting x (and correspondindly Y)
 
+    '''
     # Plot F1 Curve
     horzional_line_x = []
     horzional_line_y = []
@@ -167,7 +168,6 @@ def threshold_grid_search(embeddings):
     plt.plot(thresholds, f1_scores)
     plt.text(max_threshold, max_F1 / 8, str(max_threshold), color = "r", horizontalalignment = "center", size = "smaller", bbox=dict(facecolor='white', edgecolor="white"))
     plt.text(max_threshold, max_F1 + 0.005, str(max_F1), color = "r", horizontalalignment = "center", size = "smaller")
-    # plt.axvline(x = max_threshold / 100, ymax = max_F1, linestyle = "dashed", color = "r")
     plt.xlabel("Threshold Value")
     plt.ylabel("F1 Score")
     plt.title("Code Similarity Performance for Various Threshold Values")
@@ -179,6 +179,7 @@ def threshold_grid_search(embeddings):
     plt.ylabel("True Positive Rate")
     plt.title("Receiver Operating Characterisitc (ROC) Curve")
     plt.show()
+    '''
 
     return (f1_scores.index(max(f1_scores)) + 1) / 100, thresholds, f1_scores # Return the threshold value with the max observed F1 score
 
@@ -260,7 +261,7 @@ def F1_plots(threshold_1, f1_1, threshold_2, f1_2, threshold_3, f1_3):
 #	Purpose:	Creates a plot of the precision@n for the given code embeddings using the same method described in the 
 #               Similarity Analyzers paper
 #--------------------------------------------------------------------------------------------------------------------------------
-def precision_at_n(embeddings, threshold):
+def precision_at_n(embeddings):
     # TP = 1
     # TN = 2
     # FP = 3
@@ -270,16 +271,10 @@ def precision_at_n(embeddings, threshold):
     for k1 in list(embeddings.keys()):
         for k2 in list(embeddings.keys()):
             val = cosine_similarity(embeddings[k1][0], embeddings[k2][0])
-            if val >= threshold:
-                if embeddings[k1][1] == embeddings[k2][1]:
-                    results.append((val, 1))
-                else:
-                    results.append((val, 3))
+            if embeddings[k1][1] == embeddings[k2][1]:
+                results.append((val, 1))
             else:
-                if embeddings[k1][1] == embeddings[k2][1]:
-                    results.append((val, 4))
-                else:
-                    results.append((val, 2))
+                results.append((val, 3))
     
     results.sort(key = lambda x: x[0])
     results.reverse()
@@ -299,6 +294,9 @@ def precision_at_n(embeddings, threshold):
             elif results[i][1] == 3:
                 false_positive_count += 1
         
+        if n == 1000:
+            print("Precision@N: " + str(true_positive_count / (true_positive_count + false_positive_count)))
+
         y.append(true_positive_count / (true_positive_count + false_positive_count))
 
     plt.plot(x, y)
@@ -313,10 +311,11 @@ def precision_at_n(embeddings, threshold):
 if __name__ == "__main__":
     # Dataset A - Embeddings Created Using Java-14 Model
     # EMBEDDINGS A1 - Original
+    '''
     embeddings_A1 = read_code_embeddings("Code Embeddings/code_embeddings_A1.txt")
     A1_threshold, A1_thresholds, A1_F1s = threshold_grid_search(embeddings_A1) # A1 Threshold is 0.66 (threshold with max F1 value)
     A1_F1 = code_similarity_analysis(embeddings_A1, "A1", A1_threshold) # 0.5406698564593302
-    precision_at_n(embeddings_A1, A1_threshold)
+    precision_at_n(embeddings_A1)
 
     # EMBEDDINGS A2 - Krakatau 
     embeddings_A2 = read_code_embeddings("Code Embeddings/code_embeddings_A2.txt")
@@ -329,14 +328,16 @@ if __name__ == "__main__":
     A3_F1 = code_similarity_analysis(embeddings_A3, "A3", A3_threshold) # 0.8331441543700342
 
     F1_plots(A1_thresholds, A1_F1s, A2_thresholds, A2_F1s, A3_thresholds, A3_F1s)
+    '''
     
     # Dataset B - Embeddings Created Using Java-Large Model
     # EMBEDDINGS B1 - Original
     embeddings_B1 = read_code_embeddings("Code Embeddings/code_embeddings_B1.txt")
     B1_threshold, B1_thresholds, B1_F1s = threshold_grid_search(embeddings_B1) 
     B1_F1 = code_similarity_analysis(embeddings_B1, "B1", B1_threshold)
-    precision_at_n(embeddings_B1, B1_threshold)
+    precision_at_n(embeddings_B1)
 
+    '''
     # EMBEDDINGS B2 - Krakatau 
     embeddings_B2 = read_code_embeddings("Code Embeddings/code_embeddings_B2.txt")
     B2_threshold, B2_thresholds, B2_F1s = threshold_grid_search(embeddings_B2) 
@@ -348,3 +349,4 @@ if __name__ == "__main__":
     B3_F1 = code_similarity_analysis(embeddings_B3, "B3", B3_threshold) 
 
     F1_plots(B1_thresholds, B1_F1s, B2_thresholds, B2_F1s, B3_thresholds, B3_F1s)
+    '''

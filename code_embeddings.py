@@ -299,11 +299,13 @@ def precision_at_n(embeddings):
 
         y.append(true_positive_count / (true_positive_count + false_positive_count))
 
+    '''
     plt.plot(x, y)
     plt.xlabel("N")
     plt.ylabel("Precision")
     plt.title("Precision@N Curve for the Original Dataset")
     plt.show()
+    '''
 
 #--------------------------------------------------------------------------------------------------------------------------------
 #   Function:   average_r_precision
@@ -345,6 +347,14 @@ def average_r_precision(embeddings, test_name, r):
 
     print("EMBEDDINGS " + test_name + " ARP:", arp)
 
+#--------------------------------------------------------------------------------------------------------------------------------
+#   Function:   average_r_precision
+#	Inputs:     embeddings: embedding dictionary
+#               test_name: name of the current experiment (used in printing of results)
+#               r: number of relevant results (i.e. true positives)
+#	Outputs:    N/A
+#	Purpose:	Calculates the ARP for a set of embeddings as a method of error measurement
+#--------------------------------------------------------------------------------------------------------------------------------
 def average_r_precision_temp(embeddings):
     average_r_total = []
     for k1 in list(embeddings.keys()):
@@ -365,8 +375,14 @@ def average_r_precision_temp(embeddings):
     
     print("ARP:", sum(average_r_total)/ len(average_r_total))
 
-    return sum(average_r_total)/ len(average_r_total)
-
+#--------------------------------------------------------------------------------------------------------------------------------
+#   Function:   mean_average_precision
+#	Inputs:     embeddings: embedding dictionary
+#               test_name: name of the current experiment (used in printing of results)
+#               r: number of relevant results (i.e. true positives)
+#	Outputs:    N/A
+#	Purpose:	Calculates the MAP for a set of embeddings as a method of error measurement
+#--------------------------------------------------------------------------------------------------------------------------------
 def mean_average_precision_temp(embeddings):
     average_p_total = []
     for k1 in list(embeddings.keys()):
@@ -392,8 +408,6 @@ def mean_average_precision_temp(embeddings):
         average_p_total.append(average_p)
     
     print("MAP:", sum(average_p_total)/ len(average_p_total))
-
-    return sum(average_p_total)/ len(average_p_total)
 
 #--------------------------------------------------------------------------------------------------------------------------------
 #   Function:   mean_average_precision
@@ -448,7 +462,7 @@ if __name__ == "__main__":
     embeddings_A1 = read_code_embeddings("Code Embeddings/code_embeddings_A1.txt")
     #A1_threshold, A1_thresholds, A1_F1s = threshold_grid_search(embeddings_A1) 
     #A1_F1 = code_similarity_analysis(embeddings_A1, "A1", A1_threshold) 
-    # precision_at_n(embeddings_A1)
+    precision_at_n(embeddings_A1)
     # average_r_precision(embeddings_A1, "A1", 10)
     average_r_precision_temp(embeddings_A1)
     mean_average_precision_temp(embeddings_A1)
@@ -473,7 +487,7 @@ if __name__ == "__main__":
     embeddings_B1 = read_code_embeddings("Code Embeddings/code_embeddings_B1.txt")
     #B1_threshold, B1_thresholds, B1_F1s = threshold_grid_search(embeddings_B1) 
     #B1_F1 = code_similarity_analysis(embeddings_B1, "B1", B1_threshold)
-    # precision_at_n(embeddings_B1)
+    precision_at_n(embeddings_B1)
     #average_r_precision(embeddings_B1, "B1", 10)
     #mean_average_precision(embeddings_B1, "B1", 10)
     average_r_precision_temp(embeddings_B1)

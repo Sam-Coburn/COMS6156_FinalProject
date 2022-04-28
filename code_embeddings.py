@@ -317,7 +317,6 @@ def average_r_precision(embeddings, test_name, r):
     r_precisions_sum = 0
 
     for k1 in list(embeddings.keys()):
-
         # Create a ranked list of the top r similar embeddings (i.e. set of relevant files) for each query 
         top_r_results = []
         for k2 in list(embeddings.keys()):
@@ -345,6 +344,56 @@ def average_r_precision(embeddings, test_name, r):
     arp = r_precisions_sum / len(list(embeddings.keys()))
 
     print("EMBEDDINGS " + test_name + " ARP:", arp)
+
+def average_r_precision_temp(embeddings):
+    average_r_total = []
+    for k1 in list(embeddings.keys()):
+        results = []
+        for k2 in list(embeddings.keys()):
+            results.append((cosine_similarity(embeddings[k1][0], embeddings[k2][0]), (embeddings[k1][1], embeddings[k2][1])))
+
+        results.sort(key = lambda x: x[0])
+        results.reverse()
+
+        true_positives = 0
+        for i in range(0, 10):
+            if results[i][1][0] == results[i][1][1]:
+                true_positives = true_positives + 1
+        
+        average_r = true_positives / 10
+        average_r_total.append(average_r)
+    
+    print("ARP:", sum(average_r_total)/ len(average_r_total))
+
+    return sum(average_r_total)/ len(average_r_total)
+
+def mean_average_precision_temp(embeddings):
+    average_p_total = []
+    for k1 in list(embeddings.keys()):
+        results = []
+        for k2 in list(embeddings.keys()):
+            results.append((cosine_similarity(embeddings[k1][0], embeddings[k2][0]), (embeddings[k1][1], embeddings[k2][1])))
+
+        results.sort(key = lambda x: x[0])
+        results.reverse()
+
+        true_positives = 0
+        false_positives = 0
+        current_p = []
+        for i in range(0, 10):
+            if results[i][1][0] == results[i][1][1]:
+                true_positives = true_positives + 1
+                current_p.append(true_positives / (true_positives + false_positives))
+            else:
+                false_positives = false_positives + 1
+                current_p.append(true_positives / (true_positives + false_positives))
+        
+        average_p = sum(current_p)/ len(current_p)
+        average_p_total.append(average_p)
+    
+    print("MAP:", sum(average_p_total)/ len(average_p_total))
+
+    return sum(average_p_total)/ len(average_p_total)
 
 #--------------------------------------------------------------------------------------------------------------------------------
 #   Function:   mean_average_precision
@@ -396,24 +445,25 @@ def mean_average_precision(embeddings, test_name, r):
 if __name__ == "__main__":
     # Dataset A - Embeddings Created Using Java-14 Model
     # EMBEDDINGS A1 - Original
-    '''
     embeddings_A1 = read_code_embeddings("Code Embeddings/code_embeddings_A1.txt")
+    #A1_threshold, A1_thresholds, A1_F1s = threshold_grid_search(embeddings_A1) 
+    #A1_F1 = code_similarity_analysis(embeddings_A1, "A1", A1_threshold) 
+    # precision_at_n(embeddings_A1)
+    # average_r_precision(embeddings_A1, "A1", 10)
+    average_r_precision_temp(embeddings_A1)
+    mean_average_precision_temp(embeddings_A1)
+    #mean_average_precision(embeddings_A1, "A1", 10)
 
-    A1_threshold, A1_thresholds, A1_F1s = threshold_grid_search(embeddings_A1) # A1 Threshold is 0.66 (threshold with max F1 value)
-    A1_F1 = code_similarity_analysis(embeddings_A1, "A1", A1_threshold) # 0.5406698564593302
-    precision_at_n(embeddings_A1)
-    average_r_precision(embeddings_A1, "A1", 10)
-    mean_average_precision(embeddings_A1, "A1", 10)
-
+    '''
     # EMBEDDINGS A2 - Krakatau 
     embeddings_A2 = read_code_embeddings("Code Embeddings/code_embeddings_A2.txt")
-    A2_threshold, A2_thresholds, A2_F1s = threshold_grid_search(embeddings_A2) # A2 Threshold is 86 (threshold with max F1 value)
-    A2_F1 = code_similarity_analysis(embeddings_A2, "A2", A2_threshold) # 0.7937273823884199
+    A2_threshold, A2_thresholds, A2_F1s = threshold_grid_search(embeddings_A2) 
+    A2_F1 = code_similarity_analysis(embeddings_A2, "A2", A2_threshold)
 
     # EMBEDDINGS A3 - Procyon
     embeddings_A3 = read_code_embeddings("Code Embeddings/code_embeddings_A3.txt")
-    A3_threshold, A3_thresholds, A3_F1s = threshold_grid_search(embeddings_A3) # A3 Threshold is 0.76 (threshold with max F1 value)
-    A3_F1 = code_similarity_analysis(embeddings_A3, "A3", A3_threshold) # 0.8331441543700342
+    A3_threshold, A3_thresholds, A3_F1s = threshold_grid_search(embeddings_A3)
+    A3_F1 = code_similarity_analysis(embeddings_A3, "A3", A3_threshold)
 
     F1_plots(A1_thresholds, A1_F1s, A2_thresholds, A2_F1s, A3_thresholds, A3_F1s)
     '''
@@ -421,12 +471,13 @@ if __name__ == "__main__":
     # Dataset B - Embeddings Created Using Java-Large Model
     # EMBEDDINGS B1 - Original
     embeddings_B1 = read_code_embeddings("Code Embeddings/code_embeddings_B1.txt")
-
-    B1_threshold, B1_thresholds, B1_F1s = threshold_grid_search(embeddings_B1) 
-    B1_F1 = code_similarity_analysis(embeddings_B1, "B1", B1_threshold)
-    precision_at_n(embeddings_B1)
-    average_r_precision(embeddings_B1, "B1", 10)
-    mean_average_precision(embeddings_B1, "B1", 10)
+    #B1_threshold, B1_thresholds, B1_F1s = threshold_grid_search(embeddings_B1) 
+    #B1_F1 = code_similarity_analysis(embeddings_B1, "B1", B1_threshold)
+    # precision_at_n(embeddings_B1)
+    #average_r_precision(embeddings_B1, "B1", 10)
+    #mean_average_precision(embeddings_B1, "B1", 10)
+    average_r_precision_temp(embeddings_B1)
+    mean_average_precision_temp(embeddings_B1)
 
     '''
     # EMBEDDINGS B2 - Krakatau 

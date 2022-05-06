@@ -12,3 +12,9 @@
 9. **code2vec** - a copy of the code2vec repository, which we used to download and train the Java14 and Java-Large models
 10. **code_embeddings.py** - Python program of the functions we implemented in order to analyze the similarity between code embeddings (i.e. cosine similarity, F1 scores, precision@n)
 11. **demo.py** - Python program of the class demo which demonstrates the analytical graphs and functions we implemented based on a few sample code embeddings
+
+**Recreating Our Results**
+To recreate our results using the code embeddings generated for this experiment, one can simply clone our repository and run our file code_embeddings.py
+
+To train your own code embeddings in the same method we did for this project:
+1. Run the code2vec.py file 

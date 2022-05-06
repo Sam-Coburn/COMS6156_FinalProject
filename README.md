@@ -1,5 +1,7 @@
-# COMS6156_FinalProject by Sam Coburn and Jessica Kim
-# Spring 2022
+# COMS6156_FinalProject
+## Sam Coburn & Jessica Kim
+###### Spring 2022
+
 
 1. Code Embeddings - contains all 600 code embeddings we derived for the project
 2. Dataset 1 - Pervasive Modifications - contains the original Java file dataset

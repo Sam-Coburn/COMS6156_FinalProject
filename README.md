@@ -15,6 +15,3 @@
 
 **Recreating Our Results**
 To recreate our results using the code embeddings generated for this experiment, one can simply clone our repository and run our file code_embeddings.py
-
-To train your own code embeddings in the same method we did for this project:
-1. Run the code2vec.py file 
